@@ -5,10 +5,10 @@
 
 int main(int argc, char* args[]) {
 	try{
-		Game *game = Game::GetInstance();
-		game->Run();
+		Game *game = Game::GetInstance(); // Cria uma instância de um game
+		game->Run(); // Roda o game
 	} catch(EngineRuntimeError &e){
-		std::cerr << e.what() << "\n";
+		std::cerr << e.what() << "\n"; // Se houver um erro o exiba
 	}
 
 	return 0;
