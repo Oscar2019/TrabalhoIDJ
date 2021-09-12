@@ -1,11 +1,13 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <string>
+#include "Component.h"
 
-class Sprite{
+class Sprite : public Component{
     public:
-        Sprite();
-        Sprite(std::string file);
+        static const std::string TYPE;
+        Sprite(GameObject& associated);
+        Sprite(GameObject& associated, std::string file);
         ~Sprite();
         void Open(std::string file);
         void SetClip(int x, int y, int w, int h);
@@ -13,6 +15,10 @@ class Sprite{
         int getWidth();
         int getHeight();
         bool IsOpen();
+        
+        void Update(float dt);
+        void Render();
+        bool Is(std::string type);
     private:
         SDL_Texture* texture;
         int width;

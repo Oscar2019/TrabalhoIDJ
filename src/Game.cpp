@@ -67,7 +67,7 @@ Game::~Game(){
 void Game::Run(){
     state->LoadAssets(); // carrega os asses basicos
     while(!state->QuitRequested()){ // enquanto o usuári não apertar para fechar
-        state->Update(0.0); // update o stato do jogo
+        state->Update(0.0); // update o stado do jogo
         state->Render(); // renderiza o estado dojogo
         SDL_RenderPresent(renderer); 
         SDL_Delay(33); // espera 33 ms
