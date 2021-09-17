@@ -51,19 +51,20 @@ void Sprite::SetClip(int x, int y, int w, int h){
     clipRect = {x, y, w, h}; 
 }
 
-
+// Renderiza o Sprite
+void Sprite::Render(int x, int y, int w, int h){
+    Game *game = Game::GetInstance(); // Pega uma game
+    SDL_Renderer *renderer = game->GetRenderer(); // Pega o renderer
+    SDL_Rect rectDest{x, y, w, h}; // Cria o rect de restino
+    
+    if(SDL_RenderCopy(renderer, texture, &clipRect, &rectDest) < 0){
+        throw EngineRuntimeError_Line("[Sprite][Render(x, y, w, h)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
+    }
+}
 
 // Renderiza o Sprite
 void Sprite::Render(int x, int y){
-    Game *game = Game::GetInstance(); // Pega uma game
-    SDL_Renderer *renderer = game->GetRenderer(); // Pega o renderer
-    // SDL_Rect rectDest{500, 300, 500, 300}; // Cria o rect de restino
-
-    SDL_Rect rectDest{0, 0, 1024, 600}; // Cria o rect de restino
-    // associated.box.
-    if(SDL_RenderCopy(renderer, texture, &clipRect, &rectDest) < 0){
-        throw EngineRuntimeError_Line("[Sprite][Render(x, y)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
-    }
+    Render(x, y, width, height);
 }
 
 // retorna largura
@@ -86,17 +87,8 @@ void Sprite::Update(float dt){
 }
 
 void Sprite::Render(){
-    Game *game = Game::GetInstance(); // Pega uma game
-    SDL_Renderer *renderer = game->GetRenderer(); // Pega o renderer
-    SDL_Rect rectDest{}; // Cria o rect de restino
     Rect &box = associated.box;
-    rectDest.x = box.x;
-    rectDest.y = box.y;
-    rectDest.w = box.w;
-    rectDest.h = box.h;
-    if(SDL_RenderCopy(renderer, texture, &clipRect, &rectDest) < 0){
-        throw EngineRuntimeError_Line("[Sprite][Render(x, y)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
-    }
+    Render(box.x, box.y, box.w, box.h);
 }
 
 bool Sprite::Is(std::string type){

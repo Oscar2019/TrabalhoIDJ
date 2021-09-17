@@ -2,14 +2,20 @@
 #include "GameObject.h"
 #include "Sprite.h"
 #include "Face.h"
+#include "Game.h"
+#include "TileMap.h"
+#include "Game.h"
 
 // Construtor default
-State::State() : bg(* new GameObject()), music(), quitRequested(false){
-    
+State::State() : objectArray(), music(), quitRequested(false), tileSet(nullptr){
+
 }
 
 
 State::~State(){
+    if(tileSet != nullptr){
+        delete tileSet;
+    }
     objectArray.clear();
 }
 
@@ -21,7 +27,28 @@ bool State::QuitRequested(){
 // carrega os assts
 void State::LoadAssets(){
 
-    bg.Open("assets/img/ocean.jpg");
+    GameObject *go = nullptr;
+    
+    go = new GameObject();
+    Sprite *bg = new Sprite(*go, "assets/img/ocean.jpg");
+    go->box.x = 0;
+    go->box.y = 0;
+    go->box.w = bg->getWidth();
+    go->box.h = bg->getHeight();
+    go->AddComponent(bg);
+    objectArray.emplace_back(go);
+    
+    go = new GameObject();
+    go->box.x = 0;
+    go->box.y = 0;
+    go->box.w = 0;
+    go->box.h = 0;
+    tileSet = new TileSet(*go, 64, 64, "assets/img/tileset.png");
+    TileMap *tileMap = new TileMap(*go, "assets/map/tileMap.txt", tileSet);
+    go->AddComponent(tileMap);
+    objectArray.emplace_back(go);
+
+	
     music.Open("assets/audio/stageState.ogg");
     music.Play();
 }
@@ -48,7 +75,7 @@ void State::Update(float dt){
 
 // renderiza o estado
 void State::Render(){
-    bg.Render(0, 0);
+    // bg.Render(0, 0);
     auto end = objectArray.end();
     for(auto it = objectArray.begin(); it != end; it++){
         auto &go = *it;

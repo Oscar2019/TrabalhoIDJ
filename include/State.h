@@ -5,6 +5,7 @@
 #include "Sprite.h"
 #include "Music.h"
 #include "GameObject.h"
+#include "TileSet.h"
 
 class State{
     public:
@@ -22,7 +23,9 @@ class State{
 
         std::vector<std::unique_ptr<GameObject>> objectArray;
 
-        Sprite bg;
+        
+        // Sprite *bg;
         Music music;
         bool quitRequested;
+        TileSet *tileSet;
 };

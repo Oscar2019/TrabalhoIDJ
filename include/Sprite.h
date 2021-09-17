@@ -11,6 +11,7 @@ class Sprite : public Component{
         ~Sprite();
         void Open(std::string file);
         void SetClip(int x, int y, int w, int h);
+        void Render(int x, int y, int w, int h);
         void Render(int x, int y);
         int getWidth();
         int getHeight();

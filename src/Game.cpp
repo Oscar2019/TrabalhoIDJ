@@ -87,7 +87,7 @@ State& Game::GetState(){
 // retora o singleton
 Game* Game::GetInstance(){
     if(Game::instance == nullptr){
-        Game::instance = new Game("Oscar|170112209", 1024, 600);
+        return Game::instance = new Game("Oscar|170112209", 1024, 600);
     }
     return Game::instance;
 }
