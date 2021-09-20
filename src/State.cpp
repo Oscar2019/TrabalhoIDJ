@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "TileMap.h"
 #include "Game.h"
+#include "Sound.h"
 
 // Construtor default
 State::State() : objectArray(), music(), quitRequested(false), tileSet(nullptr){
@@ -38,6 +39,7 @@ void State::LoadAssets(){
     go->AddComponent(bg);
     objectArray.emplace_back(go);
     
+    Game *game = Game::GetInstance();
     go = new GameObject();
     go->box.x = 0;
     go->box.y = 0;
@@ -146,12 +148,15 @@ void State::Input(){
 void State::AddObject(int mouseX, int mouseY){
     GameObject *go = new GameObject();
     Sprite *sprite = new Sprite(*go,"assets/img/penguinface.png");
+    Sound *sound = new Sound(*go,"assets/audio/boom.wav");
+    // Sound *sound = new Sound(*go,"assets/a/udio/stageState.ogg");
     Face *face = new Face(*go);
     go->box.x = mouseX;
     go->box.y = mouseY;
     go->box.w = sprite->getWidth();
     go->box.h = sprite->getHeight();
     go->AddComponent(sprite);
+    go->AddComponent(sound);
     go->AddComponent(face);
     objectArray.emplace_back(go);
 }

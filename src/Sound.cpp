@@ -1,9 +1,11 @@
 #include "Sound.h"
 #include "Error.h"
+#include <iostream>
+#include <SDL2/SDL.h>
 
 const std::string Sound::TYPE = "Sound";
 
-Sound::Sound(GameObject& associated) : Component(associated), chunk(nullptr){
+Sound::Sound(GameObject& associated) : Component(associated), chunk(nullptr), channel(-1){
     
 }
 
@@ -13,9 +15,7 @@ Sound::Sound(GameObject& associated, std::string file) : Component(associated), 
 
 Sound::~Sound(){
     if(chunk != nullptr){
-        if(channel != -1){
-            Mix_HaltChannel(channel);
-        }
+        Mix_HaltChannel(channel);
         Mix_FreeChunk(chunk);
         chunk = nullptr;
         channel = -1;
@@ -30,17 +30,14 @@ void Sound::Play(int times){
 }
 
 void Sound::Stop(){
-    if(chunk == nullptr){
-        return;
+    if(chunk != nullptr){
+        Mix_HaltChannel(channel);
     }
-    Mix_HaltChannel(channel);
 }
 
 void Sound::Open(std::string file){
     if(chunk != nullptr){
-        if(channel != -1){
-            Mix_HaltChannel(channel);
-        }
+        Mix_HaltChannel(channel);
         Mix_FreeChunk(chunk);
         chunk = nullptr;
         channel = -1;

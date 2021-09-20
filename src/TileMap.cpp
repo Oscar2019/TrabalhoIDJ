@@ -1,6 +1,7 @@
 #include "TileMap.h"
 #include <fstream>
 #include <string>
+#include <iostream>
 
 
 TileMap::TileMap(GameObject& associated, std::string file, TileSet* tileSet) : Component(associated), tileMatrix(), tileSet(tileSet), mapWidth(0), mapHeight(0), mapDepth(0){
@@ -15,7 +16,7 @@ void TileMap::Load(std::string file){
     std::fstream f_file(file, std::fstream::in);
     std::string str_tmp;
     
-    std::getline(f_file, str_tmp); // Lê largura
+    std::getline(f_file, str_tmp, ','); // Lê largura
     mapWidth = std::stoi(str_tmp);
 
     std::getline(f_file, str_tmp, ','); // Lê altura
