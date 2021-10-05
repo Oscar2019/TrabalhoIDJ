@@ -48,7 +48,7 @@ void Sprite::Open(std::string file){
 
 // seta o tamanho do sprite
 void Sprite::SetClip(int x, int y, int w, int h){
-    clipRect = {x, y, w, h}; 
+    clipRect = {x, y, w, h};
 }
 
 // Renderiza o Sprite

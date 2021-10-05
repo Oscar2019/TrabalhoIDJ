@@ -1,4 +1,6 @@
 #include "TileMap.h"
+#include "State.h"
+#include "Game.h"
 #include <fstream>
 #include <string>
 #include <iostream>
