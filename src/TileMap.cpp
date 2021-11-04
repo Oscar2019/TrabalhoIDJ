@@ -50,14 +50,14 @@ int& TileMap::At(int x, int y, int z){
 
 void TileMap::Render(){
     for(int i = 0; i < mapDepth; i++){
-        RenderLayer(i);
+        RenderLayer(i, associated.box.x, associated.box.y);
     }
 }
 
 void TileMap::RenderLayer(int layer, int cameraX, int cameraY){
     for(int i = 0; i < mapHeight; i++){
         for(int j = 0; j < mapWidth; j++){
-            tileSet->RenderTile(At(j, i, layer), i * tileSet->GetTileWidth(), j * tileSet->GetTileHeight());   
+            tileSet->RenderTile(At(j, i, layer), i * tileSet->GetTileWidth() + cameraX, j * tileSet->GetTileHeight() + cameraY);   
         }
     }
 }

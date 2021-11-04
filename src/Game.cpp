@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "State.h"
+#include "InputManager.h"
 #include "Error.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -8,7 +9,12 @@
 Game *Game::instance = nullptr; // inicializa a instância com um ponteiro nulo
 
 // Cria uma instância de um game 
-Game::Game(std::string title, int width, int height) : window(nullptr), renderer(nullptr), state(nullptr){
+Game::Game(std::string title, int width, int height) : 
+  window(nullptr), 
+  renderer(nullptr), 
+  state(nullptr),
+  frameStart(),
+  dt(){
     int flags_mask = 0;
     
     // Inicializa o vídeo, aúdio e timer do SDl
@@ -67,7 +73,9 @@ Game::~Game(){
 void Game::Run(){
     state->LoadAssets(); // carrega os asses basicos
     while(!state->QuitRequested()){ // enquanto o usuári não apertar para fechar
-        state->Update(0.0); // update o stado do jogo
+        CalculaDeltaTime();
+        InputManager::GetInstance().Update();
+        state->Update(dt); // update o stado do jogo
         state->Render(); // renderiza o estado dojogo
         SDL_RenderPresent(renderer); 
         SDL_Delay(33); // espera 33 ms
@@ -90,4 +98,14 @@ Game* Game::GetInstance(){
         return Game::instance = new Game("Oscar|170112209", 1024, 600);
     }
     return Game::instance;
+}
+
+void Game::CalculaDeltaTime(){
+    int next_frameStart = SDL_GetTicks();
+    dt = (frameStart - next_frameStart) / 1000.0f;
+    frameStart = next_frameStart;
+}
+
+float Game::GetDeltaTime(){
+    return dt;
 }

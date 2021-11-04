@@ -4,11 +4,20 @@
 #include "Face.h"
 #include "Game.h"
 #include "TileMap.h"
+#include "InputManager.h"
 #include "Game.h"
 #include "Sound.h"
+#include "CameraFollower.h"
+#include <iostream>
 
 // Construtor default
-State::State() : objectArray(), music(), quitRequested(false), tileSet(nullptr){
+State::State() : 
+  camera(),
+  objectArray(), 
+  goTileMap(nullptr),
+  music(), 
+  quitRequested(false), 
+  tileSet(nullptr){
 
 }
 
@@ -32,23 +41,26 @@ void State::LoadAssets(){
     
     go = new GameObject();
     Sprite *bg = new Sprite(*go, "assets/img/ocean.jpg");
+    CameraFollower *cf = new CameraFollower(*go);
     go->box.x = 0;
     go->box.y = 0;
     go->box.w = bg->getWidth();
     go->box.h = bg->getHeight();
     go->AddComponent(bg);
+    go->AddComponent(cf);
     objectArray.emplace_back(go);
     
-    Game *game = Game::GetInstance();
-    go = new GameObject();
-    go->box.x = 0;
-    go->box.y = 0;
-    go->box.w = 0;
-    go->box.h = 0;
-    tileSet = new TileSet(*go, 64, 64, "assets/img/tileset.png");
-    TileMap *tileMap = new TileMap(*go, "assets/map/tileMap.txt", tileSet);
-    go->AddComponent(tileMap);
-    objectArray.emplace_back(go);
+    // Game *game = Game::GetInstance();
+    goTileMap = new GameObject();
+    goTileMap->box.x = 0;
+    goTileMap->box.y = 0;
+    goTileMap->box.w = bg->getWidth();
+    goTileMap->box.h = bg->getHeight();
+    tileSet = new TileSet(*goTileMap, 64, 64, "assets/img/tileset.png");
+    TileMap *tileMap = new TileMap(*goTileMap, "assets/map/tileMap.txt", tileSet);
+    
+    goTileMap->AddComponent(tileMap);
+    objectArray.emplace_back(goTileMap);
 
 	
     music.Open("assets/audio/stageState.ogg");
@@ -57,8 +69,10 @@ void State::LoadAssets(){
 
 // atualiza o estado
 void State::Update(float dt){
+    quitRequested = InputManager::GetInstance().QuitRequested();
     Input();
     auto end = objectArray.end();
+    camera.Update(dt);
     
     for(auto it = objectArray.begin(); it != end; it++){
         auto &go = *it;
@@ -77,72 +91,56 @@ void State::Update(float dt){
 
 // renderiza o estado
 void State::Render(){
-    // bg.Render(0, 0);
+    // goTileMap->box.x = camera.pos.x;
+    // goTileMap->box.y = camera.pos.y;
     auto end = objectArray.end();
     for(auto it = objectArray.begin(); it != end; it++){
         auto &go = *it;
+        go->box.x -= camera.pos.x;
+        go->box.y -= camera.pos.y;
         go->Render();
+        go->box.x += camera.pos.x;
+        go->box.y += camera.pos.y;
     }
 }
 
 
 void State::Input(){
-    if(SDL_QuitRequested() == SDL_TRUE){
-        quitRequested = true;
+    InputManager &input = InputManager::GetInstance();
+    quitRequested = input.QuitRequested() || input.KeyPress(ESCAPE_KEY);
+	int mouseX = input.GetMouseX();
+    int mouseY = input.GetMouseY();
+    mouseX += camera.pos.x;
+    mouseY += camera.pos.y;
+
+    if(input.KeyPress(SPACE_KEY)){
+        Vec2 objPos = Vec2::rotate(Vec2( 200, 0 ), -PI + PI*(rand() % 1001)/500.0) + Vec2(mouseX, mouseY);
+        AddObject((int)objPos.x, (int)objPos.y);
     }
-    SDL_Event event;
-	int mouseX, mouseY;
+    if(input.IsMouseDown(LEFT_MOUSE_BUTTON)){ 
+        for(auto it = objectArray.rbegin(); it != objectArray.rend(); it++){
+            if(Rect::is_inside((*it)->box, {(float)mouseX, (float)mouseY} ) ) {
+                Face *face = dynamic_cast<Face*>((*it)->GetComponent(Face::TYPE));
+                if(face != nullptr){
+                    face->Damage(std::rand() % 10 + 10);
+                    break;
+                }
+            }
+        } 
+    }
+    if(input.IsKeyDown(SDLK_LEFT)){
+        camera.pos.x += 10;
+    }
+    if(input.IsKeyDown(SDLK_RIGHT)){
+        camera.pos.x -= 10;
+    }
+    if(input.IsKeyDown(SDLK_UP)){
+        camera.pos.y += 10;
+    }
+    if(input.IsKeyDown(SDLK_DOWN)){
+        camera.pos.y -= 10;
+    }
 
-	// Obtenha as coordenadas do mouse
-	SDL_GetMouseState(&mouseX, &mouseY);
-
-	// SDL_PollEvent retorna 1 se encontrar eventos, zero caso contrário
-	while (SDL_PollEvent(&event)) {
-
-		// Se o evento for quit, setar a flag para terminação
-		if(event.type == SDL_QUIT) {
-			quitRequested = true;
-		}
-		
-		// Se o evento for clique...
-		if(event.type == SDL_MOUSEBUTTONDOWN) {
-
-			// Percorrer de trás pra frente pra sempre clicar no objeto mais de cima
-			for(int i = objectArray.size() - 1; i >= 0; --i) {
-				// Obtem o ponteiro e casta pra Face.
-				GameObject* go = (GameObject*) objectArray[i].get();
-				// Nota: Desencapsular o ponteiro é algo que devemos evitar ao máximo.
-				// O propósito do unique_ptr é manter apenas uma cópia daquele ponteiro,
-				// ao usar get(), violamos esse princípio e estamos menos seguros.
-				// Esse código, assim como a classe Face, é provisório. Futuramente, para
-				// chamar funções de GameObjects, use objectArray[i]->função() direto.
-
-				if(Rect::is_inside(go->box, {(float)mouseX, (float)mouseY} ) ) {
-					Face* face = (Face*)go->GetComponent("Face");
-					if ( nullptr != face ) {
-						// Aplica dano
-						face->Damage(std::rand() % 10 + 10);
-						// Sai do loop (só queremos acertar um)
-						break;
-					}
-				}
-			}
-		}
-		if( event.type == SDL_KEYDOWN ) {
-			// Se a tecla for ESC, setar a flag de quit
-			if( event.key.keysym.sym == SDLK_ESCAPE ) {
-				quitRequested = true;
-			}
-			// Se não, crie um objeto
-			else {
-				// static int x00000000000000 = 0;
-				Vec2 objPos = Vec2::rotate(Vec2( 200, 0 ), -PI + PI*(rand() % 1001)/500.0) + Vec2(mouseX, mouseY);
-				// Vec2 objPos = Vec2::rotate(Vec2( 200, 0 ),PI*(x00000000000000)/180.0) + Vec2(mouseX, mouseY);
-				// x00000000000000++;
-				AddObject((int)objPos.x, (int)objPos.y);
-			}
-		}
-	}
 }
 
 void State::AddObject(int mouseX, int mouseY){

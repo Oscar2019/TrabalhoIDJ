@@ -6,6 +6,7 @@
 #include "Music.h"
 #include "GameObject.h"
 #include "TileSet.h"
+#include "Camera.h"
 
 class State{
     public:
@@ -17,6 +18,7 @@ class State{
         void Update(float dt);
         void Render();
 
+        Camera camera;
     private:
         void Input();
         void AddObject(int mouseX, int mouseY);
@@ -25,6 +27,7 @@ class State{
 
         
         // Sprite *bg;
+        GameObject* goTileMap;
         Music music;
         bool quitRequested;
         TileSet *tileSet;
