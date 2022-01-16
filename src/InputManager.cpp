@@ -42,13 +42,13 @@ void InputManager::Update(){
         } else if(event.type == SDL_MOUSEBUTTONDOWN){
             int val = event.button.button;
             mouseState[val] = true;
-            keyUpdate[val] = time_frame;
+            mouseUpdate[val] = time_frame;
             // mouseUpdate[val] = event.button.timestamp;
             // updateCounter = event.button.timestamp;
         } else if(event.type == SDL_MOUSEBUTTONUP){
             int val = event.button.button;
             mouseState[val] = false;
-            keyUpdate[val] = time_frame;
+            mouseUpdate[val] = time_frame;
             // mouseUpdate[val] = event.button.timestamp;
             // updateCounter = event.button.timestamp;
         } else if(event.type == SDL_QUIT){
@@ -125,15 +125,14 @@ InputManager& InputManager::GetInstance(){
 }
 
 InputManager::InputManager() :
-    mouseState{},
-    mouseUpdate{},    
-    keyState{},
-    keyUpdate{},
-    quitRequested{},
-    updateCounter{},
-    mouseX{},
-    mouseY{}
-{
+  mouseState{},
+  mouseUpdate{},    
+  keyState{},
+  keyUpdate{},
+  quitRequested{},
+  updateCounter{},
+  mouseX{},
+  mouseY{}{
 
 }
 

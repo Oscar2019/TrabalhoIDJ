@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include "Component.h"
+#include "Geometry.h"
 
 class Sprite : public Component{
     public:
@@ -20,9 +21,13 @@ class Sprite : public Component{
         void Update(float dt);
         void Render();
         bool Is(std::string type);
+
+        void SetScaleX(float scaleX, float scaleY);
+        Vec2 GetScaleY();
     private:
         SDL_Texture* texture;
         int width;
         int height;
         SDL_Rect clipRect;
+        Vec2 scale;
 };

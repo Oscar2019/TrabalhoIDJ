@@ -8,11 +8,13 @@
 #include "Game.h"
 #include "Sound.h"
 #include "CameraFollower.h"
+#include "Alien.h"
 #include <iostream>
 
 // Construtor default
 State::State() : 
   camera(),
+  started(false),
   objectArray(), 
   goTileMap(nullptr),
   music(), 
@@ -41,6 +43,7 @@ void State::LoadAssets(){
     
     go = new GameObject();
     Sprite *bg = new Sprite(*go, "assets/img/ocean.jpg");
+    // Sprite *bg = new Sprite(*go, "assets\\img\\alien.png");
     CameraFollower *cf = new CameraFollower(*go);
     go->box.x = 0;
     go->box.y = 0;
@@ -61,6 +64,11 @@ void State::LoadAssets(){
     
     goTileMap->AddComponent(tileMap);
     objectArray.emplace_back(goTileMap);
+    
+    go = new GameObject();
+    Alien *alien = new Alien(*go, 6);
+    go->AddComponent(alien);
+    objectArray.emplace_back(go);
 
 	
     music.Open("assets/audio/stageState.ogg");
@@ -71,13 +79,13 @@ void State::LoadAssets(){
 void State::Update(float dt){
     quitRequested = InputManager::GetInstance().QuitRequested();
     Input();
-    auto end = objectArray.end();
     camera.Update(dt);
     
-    for(auto it = objectArray.begin(); it != end; it++){
-        auto &go = *it;
+    for(int i = 0; i < objectArray.size(); i++){
+        auto &go = objectArray[i];
         go->Update(dt);
     }
+    auto end = objectArray.end();
     for(auto it = objectArray.begin(); it != end; ){
         auto &go = *it;
         if(go->IsDead()){
@@ -156,6 +164,36 @@ void State::AddObject(int mouseX, int mouseY){
     go->AddComponent(sprite);
     go->AddComponent(sound);
     go->AddComponent(face);
-    objectArray.emplace_back(go);
+    AddObject(go);
+}
+
+
+
+void State::Start(){
+    LoadAssets();
+    for(auto go : objectArray){
+         go->Start();
+    }
+    started = true;
+}
+
+std::weak_ptr<GameObject> State::AddObject(GameObject* go){
+    std::shared_ptr<GameObject> ptr(go);
+    objectArray.push_back(ptr);
+    if(started){
+        go->Start();
+    }
+    return ptr;
+}
+
+std::weak_ptr<GameObject> State::GetObjectPtr(GameObject* go){
+    // std::cout << "hoisada1n" << std::endl;
+    for(auto obj : objectArray){
+        if(obj.get() == go){
+            // std::cout << "hoi1n" << std::endl;
+            return obj;
+        }
+    }
+    return {};
 }
 

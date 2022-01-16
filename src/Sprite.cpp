@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Error.h"
 #include "GameObject.h"
+#include "Resources.h"
 #include <cstring>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -10,31 +11,35 @@
 const std::string Sprite::TYPE = "Sprite";
 
 // construtor default
-Sprite::Sprite(GameObject& associated) : Component(associated), texture(nullptr), width(0), height(0), clipRect{}{
-    
+Sprite::Sprite(GameObject& associated) : 
+  Component(associated), 
+  texture(nullptr), 
+  width(0), 
+  height(0), 
+  clipRect{},
+  scale(1, 1){
 }
 
 // construtor que abre um sprite
-Sprite::Sprite(GameObject& associated, std::string file) : Component(associated), texture(nullptr), width(0), height(0), clipRect{}{
-    Open(file);   
+Sprite::Sprite(GameObject& associated, std::string file) : 
+  Component(associated), 
+  texture(nullptr), 
+  width(0), 
+  height(0), 
+  clipRect{},
+  scale(1, 1){
+    Open(file);  
 }
 
 // destrutor
 Sprite::~Sprite(){
-    if(texture != nullptr){
-        SDL_DestroyTexture(texture);
-    }
 }
-
 // Abre um sprite
 void Sprite::Open(std::string file){
-    if(texture != nullptr){ // Se existe um sprite anteriormente, então o destri
-        SDL_DestroyTexture(texture);
-    }
-    Game *game = Game::GetInstance(); // pega uma instância do game
+    // std::cout << file << "\n";
+    auto resources = Resources::GetInstance();
     
-    texture = IMG_LoadTexture(game->GetRenderer(), file.c_str()); // carrega a imagem
-    
+    texture = resources.GetImage(file);
     if(texture == nullptr){ // Se ocorreu um erro Exception
         throw EngineRuntimeError_Line("[Sprite][Open(file)]IMG_LoadTexture: " + std::string(IMG_GetError()) + "\n");
     }
@@ -55,9 +60,12 @@ void Sprite::SetClip(int x, int y, int w, int h){
 void Sprite::Render(int x, int y, int w, int h){
     Game *game = Game::GetInstance(); // Pega uma game
     SDL_Renderer *renderer = game->GetRenderer(); // Pega o renderer
-    SDL_Rect rectDest{x, y, w, h}; // Cria o rect de restino
+    // SDL_Rect rectDest{x, y, int(w * scale.x), int(h * scale.y)}; // Cria o rect de restino
+    // std:: cout  << int(w * scale.x) << " ";
+    // std:: cout  << int(h * scale.y) << "\n";
+    SDL_Rect rectDest{x, y, int(w * scale.x), int(h * scale.y)}; // Cria o rect de restino
     
-    if(SDL_RenderCopy(renderer, texture, &clipRect, &rectDest) < 0){
+    if(SDL_RenderCopyEx(renderer, texture, &clipRect, &rectDest, associated.angleDeg, nullptr, SDL_FLIP_NONE) < 0){
         throw EngineRuntimeError_Line("[Sprite][Render(x, y, w, h)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
     }
 }
@@ -69,12 +77,14 @@ void Sprite::Render(int x, int y){
 
 // retorna largura
 int Sprite::getWidth(){
-    return width;
+    // return width;
+    return (int) (width * scale.x);
 }
 
 // retorna altura
 int Sprite::getHeight(){
-    return height;
+    // return height;
+    return (int) (height * scale.y);
 }
 
 // verifila se o sprite está aberto
@@ -93,4 +103,14 @@ void Sprite::Render(){
 
 bool Sprite::Is(std::string type){
     return type == Sprite::TYPE;
+}
+
+
+void Sprite::SetScaleX(float scaleX, float scaleY){
+    scale.x = scaleX;
+    scale.y = scaleY;
+}
+
+Vec2 Sprite::GetScaleY(){
+    return scale;
 }

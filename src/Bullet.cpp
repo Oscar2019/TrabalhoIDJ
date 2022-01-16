@@ -1,0 +1,43 @@
+#include "Bullet.h"
+#include "Sprite.h"
+#include <iostream>
+
+
+const std::string Bullet::TYPE = "Bullet";
+
+Bullet::Bullet(GameObject &associated, float angle, float speed, int damage, float maxDistance, std::string sprite) :
+  Component(associated),
+  speed(),
+  distanceLeft(maxDistance),
+  damage(damage){
+    Sprite *spr = new Sprite(associated, sprite);
+    associated.AddComponent(spr);
+    associated.box.h = spr->getHeight();
+    associated.box.w = spr->getWidth();
+    Vec2 vec(400, 0);
+    auto ret = Vec2::rotate(vec, angle);
+    associated.angleDeg = -angle*180/acos(-1);
+    this->speed = ret * speed;
+}
+
+void Bullet::Update(float dt){
+    associated.box.x += speed.x * dt;
+    associated.box.y += speed.y * dt;
+    distanceLeft -= Vec2::magnitude(speed) * dt; 
+    if(abs(distanceLeft) <= Vec2::magnitude(speed) * dt){
+        associated.RequestDelete();
+    }
+}
+
+void Bullet::Render(){
+    
+}
+
+bool Bullet::Is(std::string type){
+    return Bullet::TYPE == type;
+}
+
+int Bullet::GetDamage(){
+    return damage;
+}
+

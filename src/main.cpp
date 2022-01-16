@@ -4,6 +4,7 @@
 #include <ctime>
 #include "Game.h"
 #include "Error.h"
+#include "Resources.h"
 
 int main(int argc, char* args[]) {
 	std::srand(std::time(nullptr));
@@ -13,6 +14,10 @@ int main(int argc, char* args[]) {
 	} catch(EngineRuntimeError &e){
 		std::cerr << e.what() << "\n"; // Se houver um erro o exiba
 	}
+	auto resources = Resources::GetInstance();
+	resources.ClearImages();
+	resources.ClearSounds();
+	resources.ClearMusics();
 
 	return 0;
 }

@@ -1,5 +1,6 @@
 #include "Music.h"
 #include "Error.h"
+#include "Resources.h"
 
 // construtor default
 Music::Music() : music(nullptr){
@@ -12,9 +13,6 @@ Music::Music(std::string file) : music(nullptr){
 
 // libera a música aberta
 Music::~Music(){
-    if(music != nullptr){
-        Mix_FreeMusic(music);
-    }
 }
 
 // toca a música
@@ -31,10 +29,8 @@ void Music::Stop(int msToStop){
 
 // Abre um arquivo de música
 void Music::Open(std::string file){
-    music = Mix_LoadMUS(file.c_str());
-    if(music == nullptr){
-        throw EngineRuntimeError_Line("[Music][Open(file)]Mix_LoadMUS: " + std::string(Mix_GetError()) + "\n");
-    }
+    auto resources = Resources::GetInstance();
+    music = resources.GetMusic(file);
 }
 
 // Verifica se uma musica está aberta

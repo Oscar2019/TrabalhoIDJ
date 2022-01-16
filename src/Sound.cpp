@@ -1,5 +1,6 @@
 #include "Sound.h"
 #include "Error.h"
+#include "Resources.h"
 #include <iostream>
 #include <SDL2/SDL.h>
 
@@ -16,7 +17,6 @@ Sound::Sound(GameObject& associated, std::string file) : Component(associated), 
 Sound::~Sound(){
     if(chunk != nullptr){
         Mix_HaltChannel(channel);
-        Mix_FreeChunk(chunk);
         chunk = nullptr;
         channel = -1;
     }
@@ -38,15 +38,12 @@ void Sound::Stop(){
 void Sound::Open(std::string file){
     if(chunk != nullptr){
         Mix_HaltChannel(channel);
-        Mix_FreeChunk(chunk);
         chunk = nullptr;
         channel = -1;
     }
 
-    chunk = Mix_LoadWAV(file.c_str());
-    if(chunk == nullptr){
-        throw EngineRuntimeError_Line("[Sound][Open(file)]Mix_LoadWAV: " + std::string(Mix_GetError()) + "\n");
-    }
+    auto resources = Resources::GetInstance();
+    chunk = resources.GetSound(file);
 }
 
 bool Sound::IsOpen(){

@@ -71,7 +71,7 @@ Game::~Game(){
 
 // carrega o game
 void Game::Run(){
-    state->LoadAssets(); // carrega os asses basicos
+    state->Start();
     while(!state->QuitRequested()){ // enquanto o usuári não apertar para fechar
         CalculaDeltaTime();
         InputManager::GetInstance().Update();
@@ -102,7 +102,7 @@ Game* Game::GetInstance(){
 
 void Game::CalculaDeltaTime(){
     int next_frameStart = SDL_GetTicks();
-    dt = (frameStart - next_frameStart) / 1000.0f;
+    dt = (next_frameStart - frameStart) / 1000.0f;
     frameStart = next_frameStart;
 }
 

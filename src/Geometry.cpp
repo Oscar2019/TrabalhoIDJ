@@ -16,6 +16,10 @@ Vec2 Vec2::multiplication(Vec2 vec, float scalar){
     return Vec2(vec.x * scalar, vec.y * scalar);
 }
 
+float Vec2::multiplication(Vec2 vec1, Vec2 vec2){
+    return vec1.x * vec2.x + vec1.y * vec2.y;
+}
+
 float Vec2::magnitude(Vec2 vec){
     return std::hypot(vec.x, vec.y);
 }
@@ -29,6 +33,10 @@ float Vec2::distance(Vec2 vec_a, Vec2 vec_b){
     float delta_x = vec_a.x - vec_b.x;
     float delta_y = vec_a.y - vec_b.y;
     return std::hypot(delta_x, delta_y);
+}
+
+float Vec2::inclination(Vec2 vec){
+    return atan2(vec.y, vec.x);
 }
 
 Vec2 Vec2::rotate(Vec2 vec, float theta){
@@ -61,6 +69,10 @@ Vec2 operator*(float scalar, Vec2 vec){
     return Vec2::multiplication(vec, scalar);
 }
 
+float operator*(Vec2 vec1, Vec2 vec2){
+    return Vec2::multiplication(vec1, vec2);
+}
+
 void operator+=(Vec2 &vec_a, Vec2 vec_b){
     vec_a.x += vec_b.x;
     vec_a.y += vec_b.y;
@@ -85,7 +97,7 @@ Rect Rect::sum(Rect &rect, Vec2 vec){
 }
 
 Vec2 Rect::center(Rect &rect){
-    return Vec2((rect.x + rect.w) / 2, (rect.y + rect.h) / 2);
+    return Vec2(rect.x + rect.w / 2, rect.y + rect.h / 2);
 }
 
 float Rect::distance(Rect &rect_a, Rect &rect_b){

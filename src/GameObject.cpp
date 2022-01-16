@@ -2,8 +2,20 @@
 #include "Component.h"
 #include <algorithm>
 
-GameObject::GameObject() : box{}, components(), isDead(false){
+GameObject::GameObject() : 
+  box{}, 
+  started(false),
+  components(), 
+  isDead(false),
+  angleDeg(0){
     
+}
+
+void GameObject::Start(){
+    for(auto &component: components){
+        component->Start();
+    }
+    started = true;
 }
 
 GameObject::~GameObject(){
@@ -34,6 +46,9 @@ void GameObject::RequestDelete(){
 }
 
 void GameObject::AddComponent(Component *cpt){
+    if(started){
+        cpt->Start();
+    }
     components.emplace_back(cpt);
 }
 
