@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "Component.h"
 #include <algorithm>
+#include <iostream>
 
 GameObject::GameObject() : 
   box{}, 
@@ -70,5 +71,13 @@ Component* GameObject::GetComponent(std::string type){
         return it->get();
     }
     return nullptr;
+}
+
+void GameObject::NotifyCollision(GameObject& other){
+    auto end = components.end();
+    for(auto it = components.begin(); it != end; it++){
+        auto &component = *it;
+        component->NotifyCollision(other);
+    }
 }
 

@@ -7,6 +7,7 @@
 #include "Resources.h"
 
 int main(int argc, char* args[]) {
+	// std::cout << args[0] << "\n";
 	std::srand(std::time(nullptr));
 	try{
 		Game *game = Game::GetInstance(); // Cria uma instância de um game

@@ -14,7 +14,9 @@ Game::Game(std::string title, int width, int height) :
   renderer(nullptr), 
   state(nullptr),
   frameStart(),
-  dt(){
+  dt(),
+  width(width),
+  height(height){
     int flags_mask = 0;
     
     // Inicializa o vídeo, aúdio e timer do SDl
@@ -109,3 +111,13 @@ void Game::CalculaDeltaTime(){
 float Game::GetDeltaTime(){
     return dt;
 }
+
+
+int Game::GetWidth(){
+    return width;
+}
+
+int Game::GetHeight(){
+    return height;
+}
+

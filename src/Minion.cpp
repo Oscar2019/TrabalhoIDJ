@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "State.h"
 #include "Bullet.h"
+#include "Collider.h"
 #include <iostream>
 
 const std::string Minion::TYPE = "Minion";
@@ -20,7 +21,8 @@ Minion::Minion(GameObject &associated, std::weak_ptr<GameObject> alienCenter, fl
     associated.box.w = sprite->getWidth();
     associated.AddComponent(sprite);
 
-    float scale = 1 + rand() / (2.0 * RAND_MAX);
+    // float scale = 1 + rand() / (2.0 * RAND_MAX);
+    float scale = 1;
     root = 100 + sprite->getWidth() * (scale - 1) / 2;
     Vec2 vec(root, 0);
     // std::cout << root << "\n";
@@ -39,6 +41,9 @@ Minion::Minion(GameObject &associated, std::weak_ptr<GameObject> alienCenter, fl
     associated.box.y = box.y + ret.y - myCenter.y;
     // associated.box.x = box.x + ret.x;
     // associated.box.y = box.y + ret.y;
+
+    Collider *collider = new Collider(associated);
+    associated.AddComponent(collider);
 }
 
 void Minion::Update(float dt){
@@ -49,7 +54,7 @@ void Minion::Update(float dt){
     if(arc > 2 * pi){
         arc -= 2 * pi;
     }
-    associated.angleDeg = -arc*180/pi;
+    associated.angleDeg = arc*180/pi;
     associated.box.x = 0;
     associated.box.y = 0;
     Vec2 vec(root, 0);
@@ -73,14 +78,16 @@ void Minion::Shoot(Vec2 target){
     // target.y = -target.y;
     Vec2 myBox(associated.box.x + associated.box.w / 2, associated.box.y + associated.box.h / 2);
     // Vec2 source(associated.box.x, associated.box.y);
-    auto arc = - Vec2::inclination(target - myBox);
+    auto arc = Vec2::inclination(target - myBox);
     // std::cout << arc / acos(-1) * 180 << "\n";
     // auto arc = acos((source * target) / (Vec2::magnitude(source) * Vec2::magnitude(target)));
     // auto arc = this->arc + acos((source * target) / (Vec2::magnitude(source) * Vec2::magnitude(target)));
     GameObject *go = new GameObject();
     go->box.x = myBox.x;
     go->box.y = myBox.y;
-    Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets\\img\\minionbullet1.png");
+    // Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets\\img\\minionbullet2.png");
+    Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets\\img\\minionbullet2.png", 3);
+    bullet->targetsPlayer = true;
     go->AddComponent(bullet);
     Game::GetInstance()->GetState().AddObject(go);
 }

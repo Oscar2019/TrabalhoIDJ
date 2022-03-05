@@ -20,6 +20,10 @@ float Vec2::multiplication(Vec2 vec1, Vec2 vec2){
     return vec1.x * vec2.x + vec1.y * vec2.y;
 }
 
+float Vec2::dot(Vec2 vec1, Vec2 vec2){
+    return vec1.x * vec2.x + vec1.y * vec2.y;
+}
+
 float Vec2::magnitude(Vec2 vec){
     return std::hypot(vec.x, vec.y);
 }
@@ -39,11 +43,21 @@ float Vec2::inclination(Vec2 vec){
     return atan2(vec.y, vec.x);
 }
 
+// Vec2 Vec2::rotate(Vec2 vec, float theta){
+//     float x_novo = vec.x * std::cos(theta) + vec.y * std::sin(theta);
+//     float y_novo = vec.y * std::cos(theta) - vec.x * std::sin(theta);
+//     return Vec2(x_novo, y_novo);
+// }
+
 Vec2 Vec2::rotate(Vec2 vec, float theta){
+// Vec2 Vec2::rotate(Vec2 p, float angle){
     float x_novo = vec.x * std::cos(theta) + vec.y * std::sin(theta);
-    float y_novo = vec.y * std::cos(theta) - vec.x * std::sin(theta);
+    float y_novo = vec.x * std::sin(theta) - vec.y * std::cos(theta);
     return Vec2(x_novo, y_novo);
+    // float cs = std::cos(angle), sn = std::sin(angle);
+    // return Vec2 ( p.x * cs - p.y * sn, p.x * sn + p.y * cs );
 }
+
 
 Vec2 Vec2::opposite(Vec2 vec){
     return Vec2(-vec.x, -vec.y);

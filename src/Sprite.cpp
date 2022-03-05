@@ -17,17 +17,25 @@ Sprite::Sprite(GameObject& associated) :
   width(0), 
   height(0), 
   clipRect{},
-  scale(1, 1){
+  scale(1, 1),
+  frameCount(1),
+  currentFrame(),
+  timeElapsed(),
+  frameTime(1){
 }
 
 // construtor que abre um sprite
-Sprite::Sprite(GameObject& associated, std::string file) : 
+Sprite::Sprite(GameObject& associated, std::string file, int frameCount, float frameTime) : 
   Component(associated), 
   texture(nullptr), 
   width(0), 
   height(0), 
   clipRect{},
-  scale(1, 1){
+  scale(1, 1),
+  frameCount(frameCount),
+  currentFrame(),
+  timeElapsed(),
+  frameTime(frameTime){
     Open(file);  
 }
 
@@ -47,7 +55,9 @@ void Sprite::Open(std::string file){
     if(SDL_QueryTexture(texture, nullptr, nullptr, &width, &height) < 0){ // Obtem a largura e a altura
         throw EngineRuntimeError_Line("[Sprite][Open(file)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
     }
+    width /= frameCount;
 
+    // SetClip(0, 0, width / frameCount, height); // Seta o tamanho
     SetClip(0, 0, width, height); // Seta o tamanho
 }
 
@@ -63,6 +73,7 @@ void Sprite::Render(int x, int y, int w, int h){
     // SDL_Rect rectDest{x, y, int(w * scale.x), int(h * scale.y)}; // Cria o rect de restino
     // std:: cout  << int(w * scale.x) << " ";
     // std:: cout  << int(h * scale.y) << "\n";
+    // SDL_Rect rectDest{x, y, int(w * scale.x / frameCount), int(h * scale.y)}; // Cria o rect de restino
     SDL_Rect rectDest{x, y, int(w * scale.x), int(h * scale.y)}; // Cria o rect de restino
     
     if(SDL_RenderCopyEx(renderer, texture, &clipRect, &rectDest, associated.angleDeg, nullptr, SDL_FLIP_NONE) < 0){
@@ -72,12 +83,14 @@ void Sprite::Render(int x, int y, int w, int h){
 
 // Renderiza o Sprite
 void Sprite::Render(int x, int y){
+    // Render(x, y, width / frameCount, height);
     Render(x, y, width, height);
 }
 
 // retorna largura
 int Sprite::getWidth(){
     // return width;
+    // return (int) (width * scale.x / frameCount);
     return (int) (width * scale.x);
 }
 
@@ -93,7 +106,11 @@ bool Sprite::IsOpen(){
 }
 
 void Sprite::Update(float dt){
-
+    timeElapsed += dt;
+    if(timeElapsed >= frameTime){
+        SetFrame((currentFrame + 1) % frameCount);
+        timeElapsed = 0;
+    }
 }
 
 void Sprite::Render(){
@@ -113,4 +130,20 @@ void Sprite::SetScaleX(float scaleX, float scaleY){
 
 Vec2 Sprite::GetScaleY(){
     return scale;
+}
+
+void Sprite::SetFrame(int frame){
+    if(currentFrame != frame){
+        currentFrame = frame;
+        SetClip(currentFrame * width, clipRect.y, clipRect.w, clipRect.h);
+    }
+}
+
+void Sprite::SetFrameCount(int frameCount){
+    frameCount = frameCount;
+    SetFrame(0);
+}
+
+void Sprite::SetFrameTime(float frameTime){
+    frameTime = frameTime;
 }

@@ -16,14 +16,14 @@ Sound::Sound(GameObject& associated, std::string file) : Component(associated), 
 
 Sound::~Sound(){
     if(chunk != nullptr){
-        Mix_HaltChannel(channel);
+        // Mix_HaltChannel(channel);
         chunk = nullptr;
         channel = -1;
     }
 }
 
 void Sound::Play(int times){
-    channel = Mix_PlayChannel(-1, chunk, times);
+    // channel = Mix_PlayChannel(-1, chunk, times);
     if(channel == -1){ // Se não conseguiur tocar a música erro
         throw EngineRuntimeError_Line("[Sound][Play(times)]Mix_PlayChannel: " + std::string(Mix_GetError()) + "\n");
     }
@@ -37,7 +37,7 @@ void Sound::Stop(){
 
 void Sound::Open(std::string file){
     if(chunk != nullptr){
-        Mix_HaltChannel(channel);
+        // Mix_HaltChannel(channel);
         chunk = nullptr;
         channel = -1;
     }

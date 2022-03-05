@@ -15,7 +15,6 @@ void Face::Damage(int damage){
     if(hitpoints <= 0){
         Sound *sound = dynamic_cast<Sound*>(associated.GetComponent(Sound::TYPE));
         sound->Play();
-        SDL_Delay(800);
         associated.RequestDelete();
     }
 }

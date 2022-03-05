@@ -11,6 +11,7 @@ struct Vec2{
     static Vec2 subtraction(Vec2 vec_a, Vec2 vec_b);
     static Vec2 multiplication(Vec2 vec, float scalar);
     static float multiplication(Vec2 vec1, Vec2 vec2);
+    static float dot(Vec2 vec1, Vec2 vec2);
     static float magnitude(Vec2 vec);
     static Vec2 normalize(Vec2 vec);
     static float distance(Vec2 vec_a, Vec2 vec_b);

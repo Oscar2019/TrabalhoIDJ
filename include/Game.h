@@ -16,6 +16,8 @@ class Game{
         void CalculaDeltaTime();
     public:
         float GetDeltaTime();
+        int GetWidth();
+        int GetHeight();
 
     private:
         static Game *instance;
@@ -24,4 +26,6 @@ class Game{
         State *state;
         int frameStart;
         float dt;
+        int width; 
+        int height;
 };

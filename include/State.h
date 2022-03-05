@@ -22,7 +22,7 @@ class State{
         void Update(float dt);
         void Render();
 
-        Camera camera;
+        Camera &camera;
     private:
         void Input();
         void AddObject(int mouseX, int mouseY);

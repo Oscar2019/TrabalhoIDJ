@@ -9,18 +9,24 @@
 #include "Sound.h"
 #include "CameraFollower.h"
 #include "Alien.h"
+#include "PenguinBody.h"
+#include "Collider.h"
+#include "Collision.h"
+#include "PenguinCannon.h"
+#include "Bullet.h"
+#include "Minion.h"
 #include <iostream>
 
 // Construtor default
 State::State() : 
-  camera(),
+  camera(Camera::GetInstance(1)),
   started(false),
   objectArray(), 
   goTileMap(nullptr),
   music(), 
   quitRequested(false), 
   tileSet(nullptr){
-
+      
 }
 
 
@@ -51,7 +57,8 @@ void State::LoadAssets(){
     go->box.h = bg->getHeight();
     go->AddComponent(bg);
     go->AddComponent(cf);
-    objectArray.emplace_back(go);
+    // objectArray.emplace_back(go);
+    AddObject(go);
     
     // Game *game = Game::GetInstance();
     goTileMap = new GameObject();
@@ -63,13 +70,25 @@ void State::LoadAssets(){
     TileMap *tileMap = new TileMap(*goTileMap, "assets/map/tileMap.txt", tileSet);
     
     goTileMap->AddComponent(tileMap);
-    objectArray.emplace_back(goTileMap);
-    
+    // objectArray.emplace_back(goTileMap);
+    AddObject(goTileMap);
+
     go = new GameObject();
     Alien *alien = new Alien(*go, 6);
     go->AddComponent(alien);
     objectArray.emplace_back(go);
+    // AddObject(go);
+    
+    go = new GameObject();
+    PenguinBody *penguinBody = new PenguinBody(*go);
+    go->box.x = 704;
+    go->box.y = 640;
+    go->AddComponent(penguinBody);
+    objectArray.emplace_back(go);
+    camera.Follow(go);
+    // AddObject(go);
 
+    // std::cout << "cheguei1\n";
 	
     music.Open("assets/audio/stageState.ogg");
     music.Play();
@@ -85,6 +104,29 @@ void State::Update(float dt){
         auto &go = objectArray[i];
         go->Update(dt);
     }
+    std::vector<int> hasCollider; 
+    for(int i = 0; i < objectArray.size(); i++){
+        auto &go = objectArray[i];
+        Collider *collider = dynamic_cast<Collider*>(go->GetComponent(Collider::TYPE));
+        
+        if(collider != nullptr){
+            hasCollider.push_back(i);
+        }
+    }
+    for(int i = 0; i < hasCollider.size(); i++){
+        auto &go_a = objectArray[hasCollider[i]];
+        Collider *collider_a = dynamic_cast<Collider*>(go_a->GetComponent(Collider::TYPE));
+        for(int j = i + 1; j < hasCollider.size(); j++){
+            auto &go_b = objectArray[hasCollider[j]];
+
+            Collider *collider_b = dynamic_cast<Collider*>(go_b->GetComponent(Collider::TYPE));
+            if(IsColliding(collider_a->box, collider_b->box, go_a->angleDeg, go_b->angleDeg)){
+                go_a->NotifyCollision(*go_b.get());
+                go_b->NotifyCollision(*go_a.get());
+            }
+        }
+    }
+    
     auto end = objectArray.end();
     for(auto it = objectArray.begin(); it != end; ){
         auto &go = *it;
@@ -95,6 +137,8 @@ void State::Update(float dt){
             it++;
         }
     }
+
+    
 }
 
 // renderiza o estado
@@ -116,38 +160,38 @@ void State::Render(){
 void State::Input(){
     InputManager &input = InputManager::GetInstance();
     quitRequested = input.QuitRequested() || input.KeyPress(ESCAPE_KEY);
-	int mouseX = input.GetMouseX();
-    int mouseY = input.GetMouseY();
-    mouseX += camera.pos.x;
-    mouseY += camera.pos.y;
+	// int mouseX = input.GetMouseX();
+    // int mouseY = input.GetMouseY();
+    // mouseX += camera.pos.x;
+    // mouseY += camera.pos.y;
 
-    if(input.KeyPress(SPACE_KEY)){
-        Vec2 objPos = Vec2::rotate(Vec2( 200, 0 ), -PI + PI*(rand() % 1001)/500.0) + Vec2(mouseX, mouseY);
-        AddObject((int)objPos.x, (int)objPos.y);
-    }
-    if(input.IsMouseDown(LEFT_MOUSE_BUTTON)){ 
-        for(auto it = objectArray.rbegin(); it != objectArray.rend(); it++){
-            if(Rect::is_inside((*it)->box, {(float)mouseX, (float)mouseY} ) ) {
-                Face *face = dynamic_cast<Face*>((*it)->GetComponent(Face::TYPE));
-                if(face != nullptr){
-                    face->Damage(std::rand() % 10 + 10);
-                    break;
-                }
-            }
-        } 
-    }
-    if(input.IsKeyDown(SDLK_LEFT)){
-        camera.pos.x += 10;
-    }
-    if(input.IsKeyDown(SDLK_RIGHT)){
-        camera.pos.x -= 10;
-    }
-    if(input.IsKeyDown(SDLK_UP)){
-        camera.pos.y += 10;
-    }
-    if(input.IsKeyDown(SDLK_DOWN)){
-        camera.pos.y -= 10;
-    }
+    // if(input.KeyPress(SPACE_KEY)){
+    //     Vec2 objPos = Vec2::rotate(Vec2( 200, 0 ), -PI + PI*(rand() % 1001)/500.0) + Vec2(mouseX, mouseY);
+    //     AddObject((int)objPos.x, (int)objPos.y);
+    // }
+    // if(input.IsMouseDown(LEFT_MOUSE_BUTTON)){ 
+    //     for(auto it = objectArray.rbegin(); it != objectArray.rend(); it++){
+    //         if(Rect::is_inside((*it)->box, {(float)mouseX, (float)mouseY} ) ) {
+    //             Face *face = dynamic_cast<Face*>((*it)->GetComponent(Face::TYPE));
+    //             if(face != nullptr){
+    //                 face->Damage(std::rand() % 10 + 10);
+    //                 break;
+    //             }
+    //         }
+    //     } 
+    // }
+    // if(input.IsKeyDown(SDLK_LEFT)){
+    //     camera.pos.x += 10;
+    // }
+    // if(input.IsKeyDown(SDLK_RIGHT)){
+    //     camera.pos.x -= 10;
+    // }
+    // if(input.IsKeyDown(SDLK_UP)){
+    //     camera.pos.y += 10;
+    // }
+    // if(input.IsKeyDown(SDLK_DOWN)){
+    //     camera.pos.y -= 10;
+    // }
 
 }
 
@@ -171,9 +215,10 @@ void State::AddObject(int mouseX, int mouseY){
 
 void State::Start(){
     LoadAssets();
-    for(auto go : objectArray){
-         go->Start();
+    for(int i = 0; i < objectArray.size(); i++){
+        objectArray[i]->Start();
     }
+    
     started = true;
 }
 

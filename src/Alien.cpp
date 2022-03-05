@@ -4,6 +4,8 @@
 #include "Minion.h"
 #include "Game.h"
 #include "State.h"
+#include "Collider.h"
+#include "Bullet.h"
 #include <iostream>
 
 const std::string Alien::TYPE = "Alien";
@@ -11,7 +13,7 @@ const std::string Alien::TYPE = "Alien";
 Alien::Alien(GameObject &associated, int nMinions):
   Component(associated),
   speed(),
-  hp(),
+  hp(100),
   taskQueue(),
   minionArray(nMinions){
     Sprite *sprite = new Sprite(associated, "assets\\img\\alien.png");
@@ -24,6 +26,9 @@ Alien::Alien(GameObject &associated, int nMinions):
     // std::cout << "assets\\img\\alien.png\n";
     associated.AddComponent(sprite);
     // std::cout << "assets\\img\\alien.png\n";
+
+    Collider *collider = new Collider(associated);
+    associated.AddComponent(collider);
 }
 
 Alien::~Alien(){
@@ -47,15 +52,16 @@ void Alien::Start(){
 }
 
 void Alien::Update(float dt){
+    Camera &camera = Camera::GetInstance(1);
     const auto pi = acos(-1);
     associated.angleDeg += 180.0 / 8 * dt;
     InputManager &input = InputManager::GetInstance();
     
     if (input.MousePress(LEFT_MOUSE_BUTTON)){
-        taskQueue.emplace(Action::SHOOT, input.GetMouseX(), input.GetMouseY());
+        taskQueue.emplace(Action::SHOOT, input.GetMouseX() + camera.pos.x, input.GetMouseY() + camera.pos.y);
     }
     if (input.MousePress(RIGHT_MOUSE_BUTTON)){
-        taskQueue.emplace(Action::MOVE, input.GetMouseX(), input.GetMouseY());
+        taskQueue.emplace(Action::MOVE, input.GetMouseX() + camera.pos.x, input.GetMouseY() + camera.pos.y);
     }
     
     if(!taskQueue.empty()){
@@ -81,6 +87,9 @@ void Alien::Update(float dt){
             taskQueue.pop();
         }
     }
+    if(hp <= 0){
+        associated.RequestDelete();
+    }
 }
 
 void Alien::Render(){
@@ -95,6 +104,13 @@ Alien::Action::Action(ActionType type, float x, float y):
   type(type),
   pos(x, y){
     
+}
+
+void Alien::NotifyCollision(GameObject& other){
+    Bullet *bullet = dynamic_cast<Bullet*>(other.GetComponent(Bullet::TYPE));
+    if(bullet != nullptr && !bullet->targetsPlayer){
+        hp -= 10;
+    }
 }
 
 
