@@ -3,6 +3,8 @@
 #include "State.h"
 #include "Bullet.h"
 #include "Collider.h"
+#include "Sound.h"
+#include "Alien.h"
 #include <iostream>
 
 const std::string Minion::TYPE = "Minion";
@@ -14,7 +16,7 @@ Minion::Minion(GameObject &associated, std::weak_ptr<GameObject> alienCenter, fl
   arc(arcOffsetDeg), 
   root(), 
   myCenter(){
-    Sprite *sprite = new Sprite(associated, "assets\\img\\minion.png");
+    Sprite *sprite = new Sprite(associated, "assets//img//minion.png");
     associated.box.x = 0;
     associated.box.y = 0;
     associated.box.h = sprite->getHeight();
@@ -85,10 +87,37 @@ void Minion::Shoot(Vec2 target){
     GameObject *go = new GameObject();
     go->box.x = myBox.x;
     go->box.y = myBox.y;
-    // Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets\\img\\minionbullet2.png");
-    Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets\\img\\minionbullet2.png", 3);
+    // Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets//img//minionbullet2.png");
+    Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets//img//minionbullet2.png", 3, 0.75);
     bullet->targetsPlayer = true;
     go->AddComponent(bullet);
     Game::GetInstance()->GetState().AddObject(go);
 }
 
+
+void Minion::NotifyCollision(GameObject& other){
+    Bullet *bullet = dynamic_cast<Bullet*>(other.GetComponent(Bullet::TYPE));
+    if(bullet != nullptr && !bullet->targetsPlayer){
+        // RequestDelete();
+        Alien *alien = dynamic_cast<Alien*>(alienCenter.lock()->GetComponent(Alien::TYPE));
+        alien->PerdeHP();
+    }
+}
+
+void Minion::RequestDelete(){
+    
+    associated.RequestDelete();
+
+    GameObject *go = new GameObject();
+    go->box = associated.box;
+    Sprite *sprite = new Sprite(*go, "assets/img/miniondeath.png", 4, 0.14, 0.56);
+    go->angleDeg = associated.angleDeg;
+    go->AddComponent(sprite);
+
+    // Sound *sound = new Sound(*go, "assets/audio/boom.wav");
+    // sound->Play();
+    // go->AddComponent(sound);
+
+    Game *game = Game::GetInstance();
+    game->GetState().AddObject(go);
+}

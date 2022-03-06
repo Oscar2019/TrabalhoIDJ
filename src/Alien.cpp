@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "State.h"
 #include "Collider.h"
+#include "Sound.h"
 #include "Bullet.h"
 #include <iostream>
 
@@ -16,16 +17,16 @@ Alien::Alien(GameObject &associated, int nMinions):
   hp(100),
   taskQueue(),
   minionArray(nMinions){
-    Sprite *sprite = new Sprite(associated, "assets\\img\\alien.png");
+    Sprite *sprite = new Sprite(associated, "assets//img//alien.png");
     associated.box.x = 512;
     associated.box.y = 300;
     associated.box.h = sprite->getHeight();
     associated.box.w = sprite->getWidth();
     // std::cout << (associated.box.x +  associated.box.h) / 2 << " ";
     // std::cout << (associated.box.y + associated.box.w) / 2 << "\n";
-    // std::cout << "assets\\img\\alien.png\n";
+    // std::cout << "assets//img//alien.png\n";
     associated.AddComponent(sprite);
-    // std::cout << "assets\\img\\alien.png\n";
+    // std::cout << "assets//img//alien.png\n";
 
     Collider *collider = new Collider(associated);
     associated.AddComponent(collider);
@@ -82,13 +83,41 @@ void Alien::Update(float dt){
         } else if(action.type == Action::SHOOT){
             int index = rand() % minionArray.size();
             // std::cout << "minion: " << index << "\n";
-            auto *minion = dynamic_cast<Minion*>(minionArray[index].lock()->GetComponent(Minion::TYPE));
-            minion->Shoot(action.pos);
+            int cnt = 1;
+            while(minionArray[index].expired() && cnt < minionArray.size()){
+                index = (index + 1) % minionArray.size();
+                cnt++;
+            }
+            if(!minionArray[index].expired()){
+                auto *minion = dynamic_cast<Minion*>(minionArray[index].lock()->GetComponent(Minion::TYPE));
+                minion->Shoot(action.pos);
+            }
             taskQueue.pop();
         }
     }
     if(hp <= 0){
         associated.RequestDelete();
+        for(int i = 0; i < minionArray.size(); i++){
+            if(!minionArray[i].expired()){
+                auto *minion = dynamic_cast<Minion*>(minionArray[i].lock()->GetComponent(Minion::TYPE));
+                minion->RequestDelete();
+
+            }
+        }
+        associated.RequestDelete();
+
+        GameObject *go = new GameObject();
+        go->box = associated.box;
+        Sprite *sprite = new Sprite(*go, "assets/img/aliendeath.png", 4, 0.14, 0.56);
+        go->angleDeg = associated.angleDeg;
+        go->AddComponent(sprite);
+
+        Sound *sound = new Sound(*go, "assets/audio/boom.wav");
+        sound->Play();
+        go->AddComponent(sound);
+
+        Game *game = Game::GetInstance();
+        game->GetState().AddObject(go);
     }
 }
 
@@ -109,8 +138,10 @@ Alien::Action::Action(ActionType type, float x, float y):
 void Alien::NotifyCollision(GameObject& other){
     Bullet *bullet = dynamic_cast<Bullet*>(other.GetComponent(Bullet::TYPE));
     if(bullet != nullptr && !bullet->targetsPlayer){
-        hp -= 10;
+        PerdeHP();
     }
 }
 
-
+void Alien::PerdeHP(){
+    hp -= 10;
+}

@@ -2,13 +2,14 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include "Component.h"
+#include "Timer.h"
 #include "Geometry.h"
 
 class Sprite : public Component{
     public:
         static const std::string TYPE;
         Sprite(GameObject& associated);
-        Sprite(GameObject& associated, std::string file, int frameCount = 1, float frameTime = 1);
+        Sprite(GameObject& associated, std::string file, int frameCount = 1, float frameTime = 1, float secondsToSelfDestruct = 0);
         ~Sprite();
         void Open(std::string file);
         void SetClip(int x, int y, int w, int h);
@@ -37,4 +38,6 @@ class Sprite : public Component{
         int currentFrame;
         float timeElapsed;
         float frameTime;
+        float secondsToSelfDestruct;
+        Timer selfDestructCount;
 };

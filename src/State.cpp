@@ -49,7 +49,7 @@ void State::LoadAssets(){
     
     go = new GameObject();
     Sprite *bg = new Sprite(*go, "assets/img/ocean.jpg");
-    // Sprite *bg = new Sprite(*go, "assets\\img\\alien.png");
+    // Sprite *bg = new Sprite(*go, "assets//img//alien.png");
     CameraFollower *cf = new CameraFollower(*go);
     go->box.x = 0;
     go->box.y = 0;

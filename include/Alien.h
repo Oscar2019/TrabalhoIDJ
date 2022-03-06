@@ -19,6 +19,7 @@ class Alien : public Component{
         void Render();
         bool Is(std::string type);
         void NotifyCollision(GameObject& other);
+        void PerdeHP();
     private:
         class Action{
             public:

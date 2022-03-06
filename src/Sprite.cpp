@@ -21,11 +21,13 @@ Sprite::Sprite(GameObject& associated) :
   frameCount(1),
   currentFrame(),
   timeElapsed(),
-  frameTime(1){
+  frameTime(1),
+  secondsToSelfDestruct(0),
+  selfDestructCount(){
 }
 
 // construtor que abre um sprite
-Sprite::Sprite(GameObject& associated, std::string file, int frameCount, float frameTime) : 
+Sprite::Sprite(GameObject& associated, std::string file, int frameCount, float frameTime, float secondsToSelfDestruct) : 
   Component(associated), 
   texture(nullptr), 
   width(0), 
@@ -35,7 +37,9 @@ Sprite::Sprite(GameObject& associated, std::string file, int frameCount, float f
   frameCount(frameCount),
   currentFrame(),
   timeElapsed(),
-  frameTime(frameTime){
+  frameTime(frameTime),
+  secondsToSelfDestruct(secondsToSelfDestruct),
+  selfDestructCount(){
     Open(file);  
 }
 
@@ -106,6 +110,12 @@ bool Sprite::IsOpen(){
 }
 
 void Sprite::Update(float dt){
+    if(secondsToSelfDestruct > 0){
+        selfDestructCount.update(dt);
+        if(selfDestructCount.Get() > secondsToSelfDestruct){
+            associated.RequestDelete();
+        }
+    }
     timeElapsed += dt;
     if(timeElapsed >= frameTime){
         SetFrame((currentFrame + 1) % frameCount);

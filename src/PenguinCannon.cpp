@@ -15,7 +15,7 @@ PenguinCannon::PenguinCannon(GameObject& associated, std::weak_ptr<GameObject> p
   pbody(penguinBody),
   angle(0), 
   timer(){
-    Sprite *sprite = new Sprite(associated, "assets\\img\\cubngun.png");
+    Sprite *sprite = new Sprite(associated, "assets//img//cubngun.png");
     associated.box.w = sprite->getWidth();
     associated.box.h = sprite->getHeight();
     associated.box.x = (pbody.lock()->box.w - associated.box.w) / 2 + pbody.lock()->box.x;
@@ -81,7 +81,7 @@ void PenguinCannon::Shoot(){
     GameObject *go = new GameObject();
     go->box.x = myBox.x;
     go->box.y = myBox.y;
-    Bullet *bullet = new Bullet(*go, angle, 1.0f, 10, 1000, "assets\\img\\penguinbullet.png", 4, 0.75);
+    Bullet *bullet = new Bullet(*go, angle, 1.0f, 10, 1000, "assets//img//penguinbullet.png", 4, 0.75);
     go->AddComponent(bullet);
     Game::GetInstance()->GetState().AddObject(go);
 }

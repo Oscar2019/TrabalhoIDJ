@@ -23,7 +23,7 @@ Sound::~Sound(){
 }
 
 void Sound::Play(int times){
-    // channel = Mix_PlayChannel(-1, chunk, times);
+    channel = Mix_PlayChannel(-1, chunk, times);
     if(channel == -1){ // Se não conseguiur tocar a música erro
         throw EngineRuntimeError_Line("[Sound][Play(times)]Mix_PlayChannel: " + std::string(Mix_GetError()) + "\n");
     }

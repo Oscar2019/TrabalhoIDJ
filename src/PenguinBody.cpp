@@ -5,6 +5,8 @@
 #include "InputManager.h"
 #include "Collider.h"
 #include "Bullet.h"
+#include "State.h"
+#include "Sound.h"
 #include <iostream>
 
 const std::string PenguinBody::TYPE = "PenguinBody";
@@ -18,7 +20,7 @@ PenguinBody::PenguinBody(GameObject& associated) :
   angle(),
   hp(100){
     player = this;
-    Sprite *sprite = new Sprite(associated, "assets\\img\\penguin.png");
+    Sprite *sprite = new Sprite(associated, "assets//img//penguin.png");
     associated.box.w = sprite->getWidth();
     associated.box.h = sprite->getHeight();
     associated.AddComponent(sprite);
@@ -81,11 +83,24 @@ void PenguinBody::Update(float dt){
     associated.box.x += speed.x * dt;
     associated.box.y += speed.y * dt;
 
-    if(hp <= 0.0001){
+    if(hp <= 0){
         associated.RequestDelete();
         player = nullptr;
         Camera &camera = Camera::GetInstance(1);
         camera.Unfollow();
+
+        GameObject *go = new GameObject();
+        go->box = associated.box;
+        Sprite *sprite = new Sprite(*go, "assets/img/penguindeath.png", 5, 0.14, 0.7);
+        go->angleDeg = associated.angleDeg;
+        go->AddComponent(sprite);
+
+        Sound *sound = new Sound(*go, "assets/audio/boom.wav");
+        sound->Play();
+        go->AddComponent(sound);
+
+        Game *game = Game::GetInstance();
+        game->GetState().AddObject(go);
     }
 }
 

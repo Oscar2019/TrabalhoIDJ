@@ -13,6 +13,8 @@ class Minion : public Component{
         void Render();
         bool Is(std::string type);
         void Shoot(Vec2 target);
+        void NotifyCollision(GameObject& other);
+        void RequestDelete();
     private:
         std::weak_ptr<GameObject> alienCenter;
         float arc;

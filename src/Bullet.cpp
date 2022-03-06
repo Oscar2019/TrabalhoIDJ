@@ -3,6 +3,7 @@
 #include "PenguinBody.h"
 #include "Alien.h"
 #include "Collider.h"
+#include "Minion.h"
 #include <iostream>
 
 
@@ -55,6 +56,8 @@ void Bullet::NotifyCollision(GameObject& other){
     if(targetsPlayer && other.GetComponent(PenguinBody::TYPE) != nullptr){
         associated.RequestDelete();
     } else if(!targetsPlayer && other.GetComponent(Alien::TYPE) != nullptr){
+        associated.RequestDelete();
+    } else if(!targetsPlayer && other.GetComponent(Minion::TYPE) != nullptr){
         associated.RequestDelete();
     }
 }

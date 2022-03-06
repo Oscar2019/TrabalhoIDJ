@@ -17,9 +17,9 @@ Music::~Music(){
 
 // toca a música
 void Music::Play(int times){
-    // if(Mix_PlayMusic(music, times) == -1){ // Se não conseguiur tocar a música erro
-    //     throw EngineRuntimeError_Line("[Music][Play(times)]Mix_PlayMusic: " + std::string(Mix_GetError()) + "\n");
-    // }
+    if(Mix_PlayMusic(music, times) == -1){ // Se não conseguiur tocar a música erro
+        throw EngineRuntimeError_Line("[Music][Play(times)]Mix_PlayMusic: " + std::string(Mix_GetError()) + "\n");
+    }
 }
 
 // Para de tocar a música
