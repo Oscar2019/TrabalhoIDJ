@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Component.h"
 #include "Geometry.h"
+#include "Timer.h"
 #include <queue>
 #include <vector>
 #include <memory>
@@ -20,21 +21,13 @@ class Alien : public Component{
         bool Is(std::string type);
         void NotifyCollision(GameObject& other);
         void PerdeHP();
+        static int alienCount;
     private:
-        class Action{
-            public:
-                enum ActionType{
-                    MOVE, 
-                    SHOOT
-                };
-                Action(ActionType type, float x, float y);
-
-                ActionType type;
-                Vec2 pos;
-        };
         Vec2 speed; 
         int hp;
-        std::queue<Action> taskQueue;
         std::vector<std::weak_ptr<GameObject>> minionArray;
-
+        enum AlienState : unsigned { MOVING = 0, RESTING = 1 };
+        AlienState state;
+        Timer restTimer;
+        Vec2 destination;
 };

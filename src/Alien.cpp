@@ -6,17 +6,22 @@
 #include "State.h"
 #include "Collider.h"
 #include "Sound.h"
+#include "State.h"
 #include "Bullet.h"
 #include <iostream>
 
 const std::string Alien::TYPE = "Alien";
+int Alien::alienCount = 0;
 
 Alien::Alien(GameObject &associated, int nMinions):
   Component(associated),
   speed(),
   hp(100),
-  taskQueue(),
-  minionArray(nMinions){
+  minionArray(nMinions),
+  state(RESTING),
+  restTimer(),
+  destination(){
+    alienCount++;
     Sprite *sprite = new Sprite(associated, "assets//img//alien.png");
     associated.box.x = 512;
     associated.box.y = 300;
@@ -33,7 +38,7 @@ Alien::Alien(GameObject &associated, int nMinions):
 }
 
 Alien::~Alien(){
-    
+    alienCount--;
 }
 
 void Alien::Start(){
@@ -57,44 +62,88 @@ void Alien::Update(float dt){
     const auto pi = acos(-1);
     associated.angleDeg += 180.0 / 8 * dt;
     InputManager &input = InputManager::GetInstance();
+    Game *game = Game::GetInstance();
+    State &gameState = game->GetState();
     
-    if (input.MousePress(LEFT_MOUSE_BUTTON)){
-        taskQueue.emplace(Action::SHOOT, input.GetMouseX() + camera.pos.x, input.GetMouseY() + camera.pos.y);
-    }
-    if (input.MousePress(RIGHT_MOUSE_BUTTON)){
-        taskQueue.emplace(Action::MOVE, input.GetMouseX() + camera.pos.x, input.GetMouseY() + camera.pos.y);
-    }
-    
-    if(!taskQueue.empty()){
-        auto action = taskQueue.front();
-        auto curPos = Rect::center(associated.box);
-        auto dist = action.pos - curPos;
-        if(action.type == Action::MOVE){
+    if(state == AlienState::RESTING){
+        restTimer.update(dt);
+        if(restTimer.Get() >= 0.5){
+            restTimer.Restart();
+            if(!gameState.player.expired()){
+                destination.x = gameState.player.lock()->box.x;
+                destination.y = gameState.player.lock()->box.y;
+                state = AlienState::MOVING;
+            } 
+        }
+    } else if(state == MOVING){
+            auto curPos = Rect::center(associated.box);
+            auto dist = destination - curPos;
             if(Vec2::magnitude(dist) <= Vec2::magnitude(speed) * dt){
                 speed = Vec2();
-                associated.box.x = action.pos.x - associated.box.w / 2;
-                associated.box.y = action.pos.y - associated.box.h / 2;
-                taskQueue.pop();
+                associated.box.x = destination.x - associated.box.w / 2;
+                associated.box.y = destination.y - associated.box.h / 2;
+                Vec2 penguinPos(gameState.player.lock()->box.x, gameState.player.lock()->box.y);
+                state = AlienState::RESTING;
+
+                auto peguinDist = INFINITY;
+                std::shared_ptr<GameObject> minion;
+                for(int i = 0; i < minionArray.size(); i++){
+                    if(!minionArray[i].expired()){
+                        auto minionAux = minionArray[i].lock();
+                        Vec2 minionPos(minionAux->box.x, minionAux->box.y);
+                        auto auxDist = Vec2::distance(penguinPos, minionPos);
+                        if(peguinDist > auxDist){
+                            peguinDist = auxDist;
+                            minion = minionAux;
+                        }
+                    }
+                }
+                Minion *curMinion = dynamic_cast<Minion*>(minion->GetComponent(Minion::TYPE));
+                curMinion->Shoot(penguinPos);
             } else{
                 speed = Vec2::normalize(dist) * 40;
                 associated.box.x += speed.x * dt;
                 associated.box.y += speed.y * dt;
             }
-        } else if(action.type == Action::SHOOT){
-            int index = rand() % minionArray.size();
-            // std::cout << "minion: " << index << "\n";
-            int cnt = 1;
-            while(minionArray[index].expired() && cnt < minionArray.size()){
-                index = (index + 1) % minionArray.size();
-                cnt++;
-            }
-            if(!minionArray[index].expired()){
-                auto *minion = dynamic_cast<Minion*>(minionArray[index].lock()->GetComponent(Minion::TYPE));
-                minion->Shoot(action.pos);
-            }
-            taskQueue.pop();
-        }
     }
+
+    // if (input.MousePress(LEFT_MOUSE_BUTTON)){
+    //     taskQueue.emplace(Action::SHOOT, input.GetMouseX() + camera.pos.x, input.GetMouseY() + camera.pos.y);
+    // }
+    // if (input.MousePress(RIGHT_MOUSE_BUTTON)){
+    //     taskQueue.emplace(Action::MOVE, input.GetMouseX() + camera.pos.x, input.GetMouseY() + camera.pos.y);
+    // }
+    
+    // if(!taskQueue.empty()){
+    //     auto action = taskQueue.front();
+    //     auto curPos = Rect::center(associated.box);
+    //     auto dist = action.pos - curPos;
+    //     if(action.type == Action::MOVE){
+    //         if(Vec2::magnitude(dist) <= Vec2::magnitude(speed) * dt){
+    //             speed = Vec2();
+    //             associated.box.x = action.pos.x - associated.box.w / 2;
+    //             associated.box.y = action.pos.y - associated.box.h / 2;
+    //             taskQueue.pop();
+    //         } else{
+    //             speed = Vec2::normalize(dist) * 40;
+    //             associated.box.x += speed.x * dt;
+    //             associated.box.y += speed.y * dt;
+    //         }
+    //     } else if(action.type == Action::SHOOT){
+    //         int index = rand() % minionArray.size();
+    //         // std::cout << "minion: " << index << "\n";
+    //         int cnt = 1;
+    //         while(minionArray[index].expired() && cnt < minionArray.size()){
+    //             index = (index + 1) % minionArray.size();
+    //             cnt++;
+    //         }
+    //         if(!minionArray[index].expired()){
+    //             auto *minion = dynamic_cast<Minion*>(minionArray[index].lock()->GetComponent(Minion::TYPE));
+    //             minion->Shoot(action.pos);
+    //         }
+    //         taskQueue.pop();
+    //     }
+    // }
     if(hp <= 0){
         associated.RequestDelete();
         for(int i = 0; i < minionArray.size(); i++){
@@ -129,11 +178,12 @@ bool Alien::Is(std::string type){
     return Alien::TYPE == type;
 }
 
-Alien::Action::Action(ActionType type, float x, float y):
-  type(type),
-  pos(x, y){
+// Alien::Action::Action(ActionType type, float x, float y):
+//   type(type),
+//   pos(x, y){
     
-}
+// }
+
 
 void Alien::NotifyCollision(GameObject& other){
     Bullet *bullet = dynamic_cast<Bullet*>(other.GetComponent(Bullet::TYPE));

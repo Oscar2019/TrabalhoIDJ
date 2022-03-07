@@ -19,6 +19,7 @@
 
 // Construtor default
 State::State() : 
+  player(),
   camera(Camera::GetInstance(1)),
   started(false),
   objectArray(), 
@@ -84,9 +85,9 @@ void State::LoadAssets(){
     go->box.x = 704;
     go->box.y = 640;
     go->AddComponent(penguinBody);
-    objectArray.emplace_back(go);
+    // objectArray.emplace_back(go);
     camera.Follow(go);
-    // AddObject(go);
+    player = AddObject(go);
 
     // std::cout << "cheguei1\n";
 	

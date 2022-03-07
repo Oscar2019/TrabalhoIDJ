@@ -22,6 +22,7 @@ class State{
         void Update(float dt);
         void Render();
 
+        std::weak_ptr<GameObject> player;
         Camera &camera;
     private:
         void Input();
