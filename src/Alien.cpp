@@ -7,6 +7,7 @@
 #include "Collider.h"
 #include "Sound.h"
 #include "State.h"
+#include "StageState.h"
 #include "Bullet.h"
 #include <iostream>
 
@@ -50,10 +51,10 @@ void Alien::Start(){
         float pi = acos(-1);
         go = new GameObject();
 
-        minionPtr = new Minion(*go, game->GetState().GetObjectPtr(&associated), (2 * pi * i) /  minionArray.size());
+        minionPtr = new Minion(*go, game->GetCurrentState().GetObjectPtr(&associated), (2 * pi * i) /  minionArray.size());
         // std::cout << ((2 * pi * i) /  minionArray.size()) * 180 / acos(-1) << "\n"; 
         go->AddComponent(minionPtr);
-        minion = game->GetInstance()->GetState().AddObject(go); 
+        minion = game->GetInstance()->GetCurrentState().AddObject(go); 
     }
 }
 
@@ -63,7 +64,7 @@ void Alien::Update(float dt){
     associated.angleDeg += 180.0 / 8 * dt;
     InputManager &input = InputManager::GetInstance();
     Game *game = Game::GetInstance();
-    State &gameState = game->GetState();
+    StageState &gameState = dynamic_cast<StageState&>(game->GetCurrentState());
     
     if(state == AlienState::RESTING){
         restTimer.update(dt);
@@ -166,7 +167,7 @@ void Alien::Update(float dt){
         go->AddComponent(sound);
 
         Game *game = Game::GetInstance();
-        game->GetState().AddObject(go);
+        game->GetCurrentState().AddObject(go);
     }
 }
 

@@ -6,7 +6,8 @@
 Resources::Resources() : 
   imageTable(),
   musicTable(),
-  soundTable(){
+  soundTable(),
+  fontTable(){
 }
 
 
@@ -24,7 +25,7 @@ Resources& Resources::GetInstance(){
     return resources;
 }
 
-SDL_Texture* Resources::GetImage (std::string file){
+std::shared_ptr<SDL_Texture> Resources::GetImage (std::string file){
     auto fileIt = imageTable.find(file);
     if(fileIt != imageTable.end()){
         return fileIt->second;
@@ -34,16 +35,19 @@ SDL_Texture* Resources::GetImage (std::string file){
         if(texture == nullptr){ // Se ocorreu um erro Exception
             throw EngineRuntimeError_Line("[Sprite][Open(file)]IMG_LoadTexture: " + std::string(IMG_GetError()) + "\n");
         }
-        imageTable[file] = texture;
-        return texture;
+        return imageTable[file] = std::shared_ptr<SDL_Texture>(texture, SDL_DestroyTexture);
     }
 } 
 
 void Resources::ClearImages(){
-   for(auto &p : imageTable){
-       SDL_DestroyTexture(p.second);
-   } 
-   imageTable.clear();
+    for(auto it = imageTable.begin(); it != imageTable.end();){
+        if(it->second.unique()){
+            it = imageTable.erase(it);
+        } else{
+            it++;
+        }
+    }
+    imageTable.clear();
 }
 
 Mix_Music* Resources::GetMusic (std::string file){
@@ -87,4 +91,18 @@ void Resources::ClearSounds(){
         Mix_FreeChunk(p.second);
    } 
    soundTable.clear();
+}
+
+TTF_Font* Resources::GetFont(std::string file, int size){
+    auto fileIt = fontTable.find(file + std::to_string(size));
+    if(fileIt != fontTable.end()){
+        return fileIt->second;
+    } else{
+        auto font = TTF_OpenFont(file.c_str(), size);
+        if(font == nullptr){
+            throw EngineRuntimeError_Line("[Resources][TTF_Font*(file, size)]GetFont: " + std::string(TTF_GetError()) + "\n");
+        }
+        fontTable[file + std::to_string(size)] = font;
+        return font;
+    } 
 }

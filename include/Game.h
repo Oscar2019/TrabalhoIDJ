@@ -1,6 +1,13 @@
 #pragma once
 #include <string>
-#include <SDL2/SDL.h>
+#include <stack>
+#include <memory>
+#define INCLUDE_SDL
+// #define INCLUDE_SDL_IMAGE
+// #define INCLUDE_SDL_MIXER 
+// #define INCLUDE_SDL_TTF 
+// #define INCLUDE_SDL_NET 
+#include "SDL_include.h"
 
 class State;
 class Game{
@@ -8,10 +15,14 @@ class Game{
         Game(std::string title, int width, int height);
     public:
         ~Game();
-        void Run();
-        SDL_Renderer* GetRenderer();
-        State& GetState();
+
         static Game* GetInstance();
+        SDL_Renderer* GetRenderer();
+        State& GetCurrentState();
+        
+        void Push(State* state);
+        
+        void Run();
     private:
         void CalculaDeltaTime();
     public:
@@ -23,9 +34,10 @@ class Game{
         static Game *instance;
         SDL_Window *window;
         SDL_Renderer *renderer;
-        State *state;
+        State *storedState;
         int frameStart;
         float dt;
         int width; 
         int height;
+        std::stack<std::unique_ptr<State>> stateStack;
 };

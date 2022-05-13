@@ -4,8 +4,12 @@
 #include "GameObject.h"
 #include "Resources.h"
 #include <cstring>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#define INCLUDE_SDL
+#define INCLUDE_SDL_IMAGE
+// #define INCLUDE_SDL_MIXER 
+// #define INCLUDE_SDL_TTF 
+// #define INCLUDE_SDL_NET 
+#include "SDL_include.h"
 #include <iostream>
 
 const std::string Sprite::TYPE = "Sprite";
@@ -52,11 +56,8 @@ void Sprite::Open(std::string file){
     auto resources = Resources::GetInstance();
     
     texture = resources.GetImage(file);
-    if(texture == nullptr){ // Se ocorreu um erro Exception
-        throw EngineRuntimeError_Line("[Sprite][Open(file)]IMG_LoadTexture: " + std::string(IMG_GetError()) + "\n");
-    }
 
-    if(SDL_QueryTexture(texture, nullptr, nullptr, &width, &height) < 0){ // Obtem a largura e a altura
+    if(SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height) < 0){ // Obtem a largura e a altura
         throw EngineRuntimeError_Line("[Sprite][Open(file)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
     }
     width /= frameCount;
@@ -80,7 +81,7 @@ void Sprite::Render(int x, int y, int w, int h){
     // SDL_Rect rectDest{x, y, int(w * scale.x / frameCount), int(h * scale.y)}; // Cria o rect de restino
     SDL_Rect rectDest{x, y, int(w * scale.x), int(h * scale.y)}; // Cria o rect de restino
     
-    if(SDL_RenderCopyEx(renderer, texture, &clipRect, &rectDest, associated.angleDeg, nullptr, SDL_FLIP_NONE) < 0){
+    if(SDL_RenderCopyEx(renderer, texture.get(), &clipRect, &rectDest, associated.angleDeg, nullptr, SDL_FLIP_NONE) < 0){
         throw EngineRuntimeError_Line("[Sprite][Render(x, y, w, h)]SDL_QueryTexture: " + std::string(SDL_GetError()) + "\n");
     }
 }

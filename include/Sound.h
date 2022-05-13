@@ -1,7 +1,12 @@
 #pragma once
 #include "Component.h"
 #include <string>
-#include <SDL2/SDL_mixer.h>
+// #define INCLUDE_SDL
+// #define INCLUDE_SDL_IMAGE
+#define INCLUDE_SDL_MIXER 
+// #define INCLUDE_SDL_TTF 
+// #define INCLUDE_SDL_NET 
+#include "SDL_include.h"
 
 class Sound : public Component{
     public:

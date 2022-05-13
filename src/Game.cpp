@@ -2,8 +2,13 @@
 #include "State.h"
 #include "InputManager.h"
 #include "Error.h"
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
+#include "Resources.h"
+#define INCLUDE_SDL
+#define INCLUDE_SDL_IMAGE
+#define INCLUDE_SDL_MIXER 
+#define INCLUDE_SDL_TTF 
+// #define INCLUDE_SDL_NET 
+#include "SDL_include.h"
 #include <stdio.h>
 
 Game *Game::instance = nullptr; // inicializa a instância com um ponteiro nulo
@@ -12,7 +17,7 @@ Game *Game::instance = nullptr; // inicializa a instância com um ponteiro nulo
 Game::Game(std::string title, int width, int height) : 
   window(nullptr), 
   renderer(nullptr), 
-  state(nullptr),
+  storedState(nullptr),
   frameStart(),
   dt(),
   width(width),
@@ -42,6 +47,10 @@ Game::Game(std::string title, int width, int height) :
     }
     Mix_AllocateChannels(32);
 
+    if(TTF_Init()){
+        throw EngineRuntimeError_Line("[Game][Game(title, width, height)]TTF_Init: " + std::string(TTF_GetError()) + "\n");
+    }
+
     // Cria uma janela
     window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
     if(window == nullptr){ // Se houver erro gera uma exceção
@@ -54,15 +63,18 @@ Game::Game(std::string title, int width, int height) :
         throw EngineRuntimeError_Line("[Game][Game(title, width, height)]SDL_CreateRenderer: " + std::string(SDL_GetError()) + "\n");
     }
 
-    state = new State(); // Cria um novo estado do jogo
-
 }
 
 Game::~Game(){
+    if(storedState != nullptr){
+        delete storedState;
+    }
     SDL_DestroyRenderer(renderer); // destroy renderer
     SDL_DestroyWindow(window); // destro a janela
 
     Mix_CloseAudio(); 
+
+    TTF_Quit(); // fecha o SDL_TTF
 
     Mix_Quit(); // fecha o SDL_MIX
 
@@ -73,15 +85,51 @@ Game::~Game(){
 
 // carrega o game
 void Game::Run(){
-    state->Start();
-    while(!state->QuitRequested()){ // enquanto o usuári não apertar para fechar
-        CalculaDeltaTime();
-        InputManager::GetInstance().Update();
-        state->Update(dt); // update o stado do jogo
-        state->Render(); // renderiza o estado dojogo
-        SDL_RenderPresent(renderer); 
-        SDL_Delay(33); // espera 33 ms
+    while(true){
+
+        if(storedState != nullptr){
+            stateStack.emplace(storedState);
+            storedState = nullptr;
+        }
+        if(stateStack.empty()){
+            break;
+        }
+        State &state = *stateStack.top();
+        if(state.QuitRequested()){
+            while(!stateStack.empty()){
+                stateStack.pop();
+            }
+            break;
+        }
+        state.Start();
+        while(!state.QuitRequested() && !state.PopRequested() && storedState == nullptr){ // enquanto o usuári não apertar para fechar
+            CalculaDeltaTime();
+            InputManager::GetInstance().Update();
+            state.Update(dt); // update o stado do jogo
+            state.Render(); // renderiza o estado dojogo
+            SDL_RenderPresent(renderer); 
+            SDL_Delay(33); // espera 33 ms
+        }
+        if(state.PopRequested()){
+            stateStack.pop();
+        }
+        if(storedState != nullptr){
+            storedState->Pause();
+        }
+        auto resources = Resources::GetInstance();
+        resources.ClearImages();
     }
+    if(storedState != nullptr){
+        stateStack.emplace(storedState);
+        storedState = nullptr;
+    }
+    while(!stateStack.empty()){
+        stateStack.pop();
+    }
+	auto resources = Resources::GetInstance();
+	resources.ClearImages();
+	resources.ClearSounds();
+	resources.ClearMusics();
 }
 
 // retorna o renderer
@@ -90,8 +138,8 @@ SDL_Renderer* Game::GetRenderer(){
 }
 
 // Retorna o estado do jogo
-State& Game::GetState(){
-    return *state;
+State& Game::GetCurrentState(){
+    return *stateStack.top();
 }
 
 // retora o singleton
@@ -120,4 +168,11 @@ int Game::GetWidth(){
 int Game::GetHeight(){
     return height;
 }
+
+void Game::Push(State* state){
+    storedState = state;
+}
+
+
+
 

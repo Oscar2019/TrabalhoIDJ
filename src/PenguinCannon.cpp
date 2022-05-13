@@ -83,5 +83,5 @@ void PenguinCannon::Shoot(){
     go->box.y = myBox.y;
     Bullet *bullet = new Bullet(*go, angle, 1.0f, 10, 1000, "assets//img//penguinbullet.png", 4, 0.75);
     go->AddComponent(bullet);
-    Game::GetInstance()->GetState().AddObject(go);
+    Game::GetInstance()->GetCurrentState().AddObject(go);
 }

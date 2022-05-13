@@ -1,5 +1,6 @@
 #include "CameraFollower.h"
 #include "State.h"
+#include "StageState.h"
 #include "Game.h"
 
 
@@ -12,8 +13,9 @@ CameraFollower::CameraFollower(GameObject &go) :
 }
 
 void CameraFollower::Update(float dt){
-    associated.box.x = Game::GetInstance()->GetState().camera.pos.x;
-    associated.box.y = Game::GetInstance()->GetState().camera.pos.y;
+    StageState& state = dynamic_cast<StageState&>(Game::GetInstance()->GetCurrentState());
+    associated.box.x = state.camera.pos.x;
+    associated.box.y = state.camera.pos.y;
 }
 
 void CameraFollower::Render(){

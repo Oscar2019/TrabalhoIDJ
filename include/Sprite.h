@@ -1,6 +1,12 @@
 #pragma once
-#include <SDL2/SDL.h>
+#define INCLUDE_SDL
+#define INCLUDE_SDL_IMAGE
+// #define INCLUDE_SDL_MIXER 
+// #define INCLUDE_SDL_TTF 
+// #define INCLUDE_SDL_NET 
+#include "SDL_include.h"
 #include <string>
+#include <memory>
 #include "Component.h"
 #include "Timer.h"
 #include "Geometry.h"
@@ -29,7 +35,7 @@ class Sprite : public Component{
         void SetFrameCount(int frameCount);
         void SetFrameTime(float frameTime);
     private:
-        SDL_Texture* texture;
+        std::shared_ptr<SDL_Texture> texture;
         int width;
         int height;
         SDL_Rect clipRect;

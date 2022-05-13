@@ -13,6 +13,7 @@ Music::Music(std::string file) : music(nullptr){
 
 // libera a música aberta
 Music::~Music(){
+    Stop();
 }
 
 // toca a música

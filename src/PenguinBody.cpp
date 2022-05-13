@@ -36,9 +36,9 @@ PenguinBody::~PenguinBody(){
 void PenguinBody::Start(){
     Game *game = Game::GetInstance();
     GameObject *go = new GameObject();
-    PenguinCannon *pc = new PenguinCannon(*go, game->GetState().GetObjectPtr(&associated));
+    PenguinCannon *pc = new PenguinCannon(*go, game->GetCurrentState().GetObjectPtr(&associated));
     go->AddComponent(pc);
-    pcannon = game->GetState().AddObject(go);
+    pcannon = game->GetCurrentState().AddObject(go);
 }
 
 void PenguinBody::Update(float dt){
@@ -80,9 +80,36 @@ void PenguinBody::Update(float dt){
     speed = Vec2(1, 0);
     speed = Vec2::rotate(speed, angle) * linearSpeed;
     
-    associated.box.x += speed.x * dt;
-    associated.box.y += speed.y * dt;
+    if(associated.box.x + speed.x * dt < 0){
+        associated.box.x = 0;
+        speed.x = 0;
+    } else if(associated.box.x + speed.x * dt >= 1408){
+        associated.box.x = 1408;
+        speed.x = 0;
+    } else{
+        associated.box.x += speed.x * dt;
+    }
+    if(associated.box.y + speed.y * dt < 0){
+        associated.box.y = 0;
+        speed.y = 0;
+    } else if(associated.box.y + speed.y * dt >= 1280){
+        associated.box.y = 1280;
+        speed.y = 0;
+    } else{
+        associated.box.y += speed.y * dt;
+    }
 
+    // std::cout << "associated.box.x " << associated.box.x << "\n";
+    // std::cout << "associated.box.y " << associated.box.y << "\n";
+    // std::cout << "associated.box.w " << associated.box.w << "\n";
+    // std::cout << "associated.box.h " << associated.box.h << "\n";
+    /*
+        associated.box.x 24.1204
+        associated.box.y -16.3122
+
+        associated.box.x 1304.38
+        associated.box.y 1181.12
+    */
     if(hp <= 0){
         associated.RequestDelete();
         player = nullptr;
@@ -100,7 +127,7 @@ void PenguinBody::Update(float dt){
         go->AddComponent(sound);
 
         Game *game = Game::GetInstance();
-        game->GetState().AddObject(go);
+        game->GetCurrentState().AddObject(go);
     }
 }
 

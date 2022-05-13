@@ -26,6 +26,8 @@ void TileMap::Load(std::string file){
     
     std::getline(f_file, str_tmp, ','); // Lê profundidade
     mapDepth = std::stoi(str_tmp);
+    
+    // static int aux = 0;
 
     tileMatrix.reserve(mapWidth * mapHeight * mapDepth);
     for(int i = 0; i < mapDepth; i++){
@@ -34,10 +36,15 @@ void TileMap::Load(std::string file){
                 std::getline(f_file, str_tmp, ','); // Lê tile
                 int tile = std::stoi(str_tmp);
                 tile--;
+                // if(i * mapHeight * mapWidth + j * mapWidth + k == tileMatrix.size()){
+                //     aux++;
+                // }
                 tileMatrix.push_back(tile);   
+                // At(k, j, i) = tile;
             }
         }
     }
+    // std::cout << aux << "\n";
 }
 
 void TileMap::SetTileSet(TileSet* tileSet){
@@ -57,7 +64,7 @@ void TileMap::Render(){
 void TileMap::RenderLayer(int layer, int cameraX, int cameraY){
     for(int i = 0; i < mapHeight; i++){
         for(int j = 0; j < mapWidth; j++){
-            tileSet->RenderTile(At(j, i, layer), i * tileSet->GetTileWidth() + cameraX, j * tileSet->GetTileHeight() + cameraY);   
+            tileSet->RenderTile(At(j, i, layer), j * tileSet->GetTileWidth() + cameraX, i * tileSet->GetTileHeight() + cameraY);   
         }
     }
 }

@@ -88,10 +88,10 @@ void Minion::Shoot(Vec2 target){
     go->box.x = myBox.x;
     go->box.y = myBox.y;
     // Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets//img//minionbullet2.png");
-    Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 10, Vec2::distance(myBox, target), "assets//img//minionbullet2.png", 3, 0.75);
+    Bullet *bullet = new Bullet(*go, (float)arc, 1.0f, 1000, 1000, "assets//img//minionbullet2.png", 3, 0.75);
     bullet->targetsPlayer = true;
     go->AddComponent(bullet);
-    Game::GetInstance()->GetState().AddObject(go);
+    Game::GetInstance()->GetCurrentState().AddObject(go);
 }
 
 
@@ -119,5 +119,5 @@ void Minion::RequestDelete(){
     // go->AddComponent(sound);
 
     Game *game = Game::GetInstance();
-    game->GetState().AddObject(go);
+    game->GetCurrentState().AddObject(go);
 }
